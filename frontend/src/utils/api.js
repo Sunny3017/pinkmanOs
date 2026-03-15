@@ -2,7 +2,9 @@ import axios from 'axios';
 
 const isProduction = import.meta.env.PROD;
 const api = axios.create({
-  baseURL: isProduction ? '/api' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'),
+  // Use absolute Render URL in production for Netlify deployment
+  // Otherwise use local development URL
+  baseURL: isProduction ? 'https://pinkmanos.onrender.com/api' : 'http://localhost:5000/api',
   withCredentials: true,
 });
 

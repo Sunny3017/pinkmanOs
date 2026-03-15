@@ -25,7 +25,13 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disabled for simplicity in development/production if needed
 }));
 app.use(cors({
-  origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5174'],
+  origin: [
+    process.env.CLIENT_URL, 
+    'http://localhost:5173', 
+    'http://localhost:5174',
+    'https://pinkmanos.onrender.com', // Live Render URL
+    'https://pinkman69.netlify.app'    // Live Netlify URL
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

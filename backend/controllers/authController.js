@@ -29,8 +29,8 @@ const login = async (req, res) => {
 
     res.cookie(process.env.JWT_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, // Required for sameSite: 'none'
+      sameSite: 'none', // Required for cross-site (Netlify to Render)
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 

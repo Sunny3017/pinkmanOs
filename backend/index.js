@@ -25,23 +25,14 @@ app.use(helmet({
   contentSecurityPolicy: false, // Disabled for simplicity in development/production if needed
 }));
 app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      process.env.CLIENT_URL,
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'https://pinkman69.netlify.app'
-    ];
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    'https://pinkman69.netlify.app',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cookie']
 }));
 
 // Apply global rate limiting

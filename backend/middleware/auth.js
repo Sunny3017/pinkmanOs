@@ -4,7 +4,10 @@ const User = require('../models/User');
 const auth = async (req, res, next) => {
   try {
     const cookieName = process.env.JWT_COOKIE_NAME || 'token';
-    const token = req.cookies[cookieName];
+    const cookieToken = req.cookies[cookieName];
+    const authHeader = req.headers.authorization || '';
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : null;
+    const token = bearerToken || cookieToken;
 
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });

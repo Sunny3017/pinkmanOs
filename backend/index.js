@@ -93,30 +93,44 @@ mongoose.connect(process.env.MONGO_URI)
       if (!username || !password) return;
 
       const existing = await User.findOne({ username });
-      if (existing) return;
+      const forceReset = String(process.env.ADMIN_FORCE_RESET || '').toLowerCase() === 'true';
+      if (existing && !forceReset) return;
 
       const expiryDays = Number(process.env.ADMIN_EXPIRY_DAYS || 3650);
       const expiryDate = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000);
 
-      await User.create({
-        username,
-        password,
-        role: 'admin',
-        allowedSearchLimit: 999999,
-        expiryDate,
-        isActive: true,
-      });
-      console.log('Bootstrapped initial admin user:', username);
+      if (!existing) {
+        await User.create({
+          username,
+          password,
+          role: 'admin',
+          allowedSearchLimit: 999999,
+          expiryDate,
+          isActive: true,
+        });
+        console.log('Bootstrapped initial admin user:', username);
+      } else {
+        existing.password = password; // will re-hash via pre('save')
+        existing.role = 'admin';
+        existing.allowedSearchLimit = 999999;
+        existing.expiryDate = expiryDate;
+        existing.isActive = true;
+        await existing.save();
+        console.log('Reset existing admin user credentials:', username);
+      }
     };
 
-    bootstrapAdmin().catch((err) => {
-      console.error('Failed to bootstrap admin user:', err);
-    });
+    bootstrapAdmin()
+      .catch((err) => {
+        console.error('Failed to bootstrap admin user:', err);
+      })
+      .finally(() => {
+        const PORT = process.env.PORT || 5000;
+        app.listen(PORT, () => {
+          console.log(`Server running on port ${PORT}`);
+        });
+      });
 
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
   })
   .catch((err) => {
     console.error('Database connection error:', err);

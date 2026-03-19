@@ -13,8 +13,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Redirect to login on 401
-      if (window.location.pathname !== '/login') {
+      // Don't hard-redirect on initial auth check; let the app decide.
+      const url = error.config?.url || '';
+      const isAuthMeCall = typeof url === 'string' && url.includes('/auth/me');
+      if (!isAuthMeCall && window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     }

@@ -8,16 +8,28 @@ const generateToken = (id) => {
 };
 
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
+  const loginId = (username || email || '').trim();
 
   try {
     if (!process.env.JWT_SECRET) {
       return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET is missing' });
     }
+    if (!process.env.JWT_COOKIE_NAME) {
+      console.warn('[auth] JWT_COOKIE_NAME not set; using default "token"');
+    }
+    if (!loginId || !password) {
+      return res.status(400).json({ error: 'username/email and password are required' });
+    }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username: loginId });
 
     if (!user || !(await user.comparePassword(password))) {
+      console.warn('[auth] login failed', {
+        loginId,
+        ip: req.ip,
+        ua: req.headers['user-agent'],
+      });
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 

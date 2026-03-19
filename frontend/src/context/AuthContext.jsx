@@ -20,11 +20,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // Only call /me if we have a token; otherwise the initial 401 is expected.
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!token) {
+      setLoading(false);
+      setUser(null);
+      return;
+    }
     fetchUser();
   }, []);
 
   const login = async (username, password) => {
-    const response = await api.post('/auth/login', { username, password });
+    // Backend accepts username OR email; UI uses email input.
+    const response = await api.post('/auth/login', { email: username, password });
     if (response.data?.token) {
       localStorage.setItem(TOKEN_STORAGE_KEY, response.data.token);
     }

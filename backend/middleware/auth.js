@@ -3,7 +3,8 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.cookies[process.env.JWT_COOKIE_NAME];
+    const cookieName = process.env.JWT_COOKIE_NAME || 'token';
+    const token = req.cookies[cookieName];
 
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });

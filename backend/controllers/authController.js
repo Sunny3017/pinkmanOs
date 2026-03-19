@@ -11,6 +11,10 @@ const login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'Server misconfiguration: JWT_SECRET is missing' });
+    }
+
     const user = await User.findOne({ username });
 
     if (!user || !(await user.comparePassword(password))) {
@@ -26,11 +30,14 @@ const login = async (req, res) => {
     }
 
     const token = generateToken(user._id);
+    const cookieName = process.env.JWT_COOKIE_NAME || 'token';
+    const isProd = process.env.NODE_ENV === 'production';
 
-    res.cookie(process.env.JWT_COOKIE_NAME, token, {
+    res.cookie(cookieName, token, {
       httpOnly: true,
-      secure: true, // Required for sameSite: 'none'
-      sameSite: 'none', // Required for cross-site (Netlify to Render)
+      secure: isProd, // requires app.set('trust proxy', 1) behind proxies
+      sameSite: isProd ? 'none' : 'lax', // cross-site in prod (Netlify -> Render)
+      path: '/',
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
@@ -53,7 +60,13 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie(process.env.JWT_COOKIE_NAME);
+  const cookieName = process.env.JWT_COOKIE_NAME || 'token';
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie(cookieName, {
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+  });
   res.json({ message: 'Logged out successfully' });
 };
 

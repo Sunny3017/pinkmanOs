@@ -15,6 +15,7 @@ const searchRoutes = require('./routes/searchRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
+app.set('trust proxy', 1); // Render/Proxies: required for secure cookies + correct client IP
 
 // Basic Middleware
 app.use(express.json());
@@ -26,15 +27,23 @@ app.use(compression());
 app.use(helmet({
   contentSecurityPolicy: false, // Disabled for simplicity in development/production if needed
 }));
+const corsOrigins =
+  (process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'https://pinkman69.netlify.app',
-    'http://localhost:5173',
-    'http://localhost:5174'
-  ],
+  origin: corsOrigins.length
+    ? corsOrigins
+    : [
+      'https://pinkman69.netlify.app',
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Cookie']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 }));
 
 // Apply global rate limiting

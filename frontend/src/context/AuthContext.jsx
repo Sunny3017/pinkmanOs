@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
 
 const AuthContext = createContext(null);
+const TOKEN_STORAGE_KEY = 'pinkman_token';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -24,12 +25,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     const response = await api.post('/auth/login', { username, password });
+    if (response.data?.token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, response.data.token);
+    }
     setUser(response.data.user);
     return response.data.user;
   };
 
   const logout = async () => {
     await api.post('/auth/logout');
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
     setUser(null);
     window.location.href = '/login';
   };

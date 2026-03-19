@@ -45,6 +45,7 @@ const login = async (req, res) => {
     await user.save();
 
     res.json({
+      token,
       user: {
         id: user._id,
         username: user.username,
